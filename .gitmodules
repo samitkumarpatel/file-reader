@@ -1,0 +1,18 @@
+[submodule "python"]
+	path = python
+	url = https://github.com/fullstack-e-learning/file-reader-python.git
+[submodule "node"]
+	path = node
+	url = https://github.com/fullstack-e-learning/file-reader-node.git
+[submodule "kotlin"]
+	path = kotlin
+	url = https://github.com/fullstack-e-learning/file-reader-kotlin.git
+[submodule "java"]
+	path = java
+	url = https://github.com/fullstack-e-learning/file-reader-java.git
+[submodule "dotnet"]
+	path = dotnet
+	url = https://github.com/fullstack-e-learning/file-reader-dotnet.git
+[submodule "go"]
+	path = go
+	url = https://github.com/fullstack-e-learning/file-reader-go.git
