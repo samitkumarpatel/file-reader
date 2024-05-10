@@ -8,7 +8,7 @@ If you want to know, Click on this link: [What is git submodule](https://www.fre
 
 To work on this repo
 
-- Clone it in a directory
+- Clone this repo it in a directory
 ```sh
   git clone .....
 ```
