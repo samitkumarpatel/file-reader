@@ -1,0 +1,71 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672" #Admin console access
+      - "1885:15674" #rabbit_web_stomp
+      - "61613:61613" # STOMP
+      - "1883:1883" #MQTT
+    command:
+    - /bin/bash
+    - -c
+    - |
+      rabbitmq-plugins enable --offline rabbitmq_management rabbitmq_stomp rabbitmq_web_stomp rabbitmq_mqtt
+      rabbitmq-server
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+  rabbitmq-admin:
+   image: curlimages/curl
+   restart: on-failure
+   depends_on: 
+   - rabbitmq
+   command:
+      - /bin/sh
+      - -c
+      - |
+        #queue
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/%2f/file-reader-X
+        #Exchange
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"type": "direct","durable": true}' http://rabbitmq:15672/api/exchanges/%2f/file-reader-X
+        #Bindings
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{"routing_key":"file-reader-X"}' http://rabbitmq:15672/api/bindings/%2f/e/file-reader-X/q/file-reader-X
+        
+        # with an fanout approach
+        # Create durable queues
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/%2f/file-reader-java
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/%2f/file-reader-node
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/%2f/file-reader-go
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/%2f/file-reader-python
+
+        # Create durable fanout exchange
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"type": "fanout","durable": true}' http://rabbitmq:15672/api/exchanges/%2f/file-reader
+
+        # Create bindings between exchange and queues
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{}' http://rabbitmq:15672/api/bindings/%2f/e/file-reader/q/file-reader-java
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{}' http://rabbitmq:15672/api/bindings/%2f/e/file-reader/q/file-reader-node
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{}' http://rabbitmq:15672/api/bindings/%2f/e/file-reader/q/file-reader-go
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{}' http://rabbitmq:15672/api/bindings/%2f/e/file-reader/q/file-reader-python
+
+
+        #with qa vHost
+        curl -u user:password -X PUT http://rabbitmq:15672/api/vhosts/qa1
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"durable":true}' http://rabbitmq:15672/api/queues/qa1/hello
+        curl -i -u user:password -H "content-type:application/json" -X PUT -d '{"type": "direct","durable": true}' http://rabbitmq:15672/api/exchanges/qa1/hello
+        curl -i -u user:password -H "content-type:application/json" -X POST -d '{"routing_key":"hello"}' http://rabbitmq:15672/api/bindings/qa1/e/hello/q/hello
+
+# https://raw.githack.com/rabbitmq/rabbitmq-management/rabbitmq_v3_6_9/priv/www/api/index.html
+# Add vhost with curl
+# curl -u user:password -X PUT http://localhost:15672/api/vhosts/qa1
+
+# Add a queue
+# curl -i -u user:password -H "content-type:application/json" -X PUT -d'{"durable":true}' http://localhost:15672/api/queues/%2f/hello
+
+# Add Exchange
+# curl -i -u user:password -H "content-type:application/json" -XPUT -d"{\"type\":\"direct\",\"durable\":true}" http://localhost:15672/api/exchanges/%2f/hello
+
+# Add a bindings
+# curl -i -u user:password -H "content-type:application/json" -X POST -d"{\"routing_key\":\"hello\"}" http://localhost:15672/api/bindings/%2f/e/hello/q/hello

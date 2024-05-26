@@ -24,3 +24,6 @@ git submodule update
 ```
 
 - If there is a Chand/ update in the submodule , you can pull the latest by using the same `git submodule update` command
+
+## RabbitMq
+- [Reference guide](https://www.rabbitmq.com/tutorials/tutorial-one-javascript)
