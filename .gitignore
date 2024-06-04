@@ -4,5 +4,7 @@
 **/kotlin/**
 **/node/**
 **/python/**
+**/fileupload/**
 .file-reader-python
 .file-reader-python/**
+.DS_Store

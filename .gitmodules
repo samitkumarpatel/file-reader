@@ -16,3 +16,6 @@
 [submodule "go"]
 	path = go
 	url = https://github.com/fullstack-e-learning/file-reader-go.git
+[submodule "fileupload"]
+	path = fileupload
+	url = https://github.com/fullstack-e-learning/file-reader-fileupload.git
