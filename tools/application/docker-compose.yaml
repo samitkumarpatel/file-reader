@@ -1,0 +1,79 @@
+services:
+  redis:
+    image: redis:7.2.5-alpine
+    hostname: redis
+    ports:
+    - '6379:6379'
+  fileupload:
+    image: ghcr.io/fullstack-e-learning/file-reader-fileupload:main
+    depends_on:
+      - redis
+    volumes:
+      - file-storage:/workspace
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '8080:8080'
+  java:
+    image: ghcr.io/fullstack-e-learning/file-reader-java:main
+    depends_on:
+      - redis
+    volumes:
+      - type: volume
+        source: file-storage
+        target: /usr/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '8081:8081'
+  kotlin:
+    image: ghcr.io/fullstack-e-learning/file-reader-kotlin:main
+    depends_on:
+      - redis
+    volumes:
+      - type: volume
+        source: file-storage
+        target: /usr/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '9000:9000'
+  node:
+    image: ghcr.io/fullstack-e-learning/file-reader-node:main
+    depends_on:
+      - redis
+    volumes:
+      - type: volume
+        source: file-storage
+        target: /usr/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '3000:3000'
+      - '3001:3001'
+  python:
+    image: ghcr.io/fullstack-e-learning/file-reader-python:main
+    depends_on:
+      - redis
+    volumes:
+      - type: volume
+        source: file-storage
+        target: /usr/data
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '5000:5000'
+      - '5001:5001'
+volumes:
+  file-storage:
+    
