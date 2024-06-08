@@ -6,10 +6,11 @@ services:
     - '6379:6379'
   fileupload:
     image: ghcr.io/fullstack-e-learning/file-reader-fileupload:main
+    user: root:root
     depends_on:
       - redis
     volumes:
-      - file-storage:/workspace
+      - file-storage:/usr/data:rw
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -18,12 +19,11 @@ services:
       - '8080:8080'
   java:
     image: ghcr.io/fullstack-e-learning/file-reader-java:main
+    user: root:root
     depends_on:
       - redis
     volumes:
-      - type: volume
-        source: file-storage
-        target: /usr/data
+      - file-storage:/usr/data:r
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -32,12 +32,11 @@ services:
       - '8081:8081'
   kotlin:
     image: ghcr.io/fullstack-e-learning/file-reader-kotlin:main
+    user: root:root
     depends_on:
       - redis
     volumes:
-      - type: volume
-        source: file-storage
-        target: /usr/data
+      - file-storage:/usr/data:r
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -49,9 +48,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - type: volume
-        source: file-storage
-        target: /usr/data
+      - file-storage:/usr/data:r
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -64,9 +61,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - type: volume
-        source: file-storage
-        target: /usr/data
+      - file-storage:/usr/data:r
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -74,6 +69,18 @@ services:
     ports:
       - '5000:5000'
       - '5001:5001'
+  go:
+    image: ghcr.io/fullstack-e-learning/file-reader-go:main
+    depends_on:
+      - redis
+    volumes:
+      - file-storage:/usr/data:r
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - FILE_LOOKUP_PATH=/usr/data
+    ports:
+      - '6000:6000'
 volumes:
   file-storage:
     
