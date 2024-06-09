@@ -1,0 +1,44 @@
+---
+spring:
+  application:
+    name: spring-cloud-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+      routes:
+        - id: fileupload
+          uri: http://fileupload:8082
+          predicates:
+            - Path=/fileupload
+          filters:
+            - SetPath=/file/upload
+        - id: node-ws
+          uri: ws://node:3001
+          predicates:
+            - Path=/node/ws/
+          filters:
+            - RewritePath=/node/ws(?<segment>/?.*), $\{segment}
+        - id: node
+          uri: http://node:3000
+          predicates:
+            - Path=/node/**
+          filters:
+            - RewritePath=/node(?<segment>/?.*), $\{segment}
+        - id: python-ws
+          uri: ws://python:5001
+          predicates:
+            - Path=/python/ws/
+          filters:
+            - RewritePath=/python/ws(?<segment>/?.*), $\{segment}
+        - id: python
+          uri: http://python:5000
+          predicates:
+            - Path=/python/**
+          filters:
+            - RewritePath=/python(?<segment>/?.*), $\{segment}
+
+

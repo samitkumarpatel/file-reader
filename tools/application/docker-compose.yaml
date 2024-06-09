@@ -15,8 +15,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - FILE_LOOKUP_PATH=/usr/data
-    ports:
-      - '8080:8080'
+      - server.port=8082
+    # ports:
+    #   - '8082:8082'
   java:
     image: ghcr.io/fullstack-e-learning/file-reader-java:main
     user: root:root
@@ -45,6 +46,7 @@ services:
       - '9000:9000'
   node:
     image: ghcr.io/fullstack-e-learning/file-reader-node:main
+    restart: on-failure
     depends_on:
       - redis
     volumes:
@@ -53,9 +55,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - FILE_LOOKUP_PATH=/usr/data
-    ports:
-      - '3000:3000'
-      - '3001:3001'
+    # ports:
+    #   - '3000:3000'
+    #   - '3001:3001'
   python:
     image: ghcr.io/fullstack-e-learning/file-reader-python:main
     depends_on:
@@ -66,9 +68,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - FILE_LOOKUP_PATH=/usr/data
-    ports:
-      - '5000:5000'
-      - '5001:5001'
+    # ports:
+    #   - '5000:5000'
+    #   - '5001:5001'
   go:
     image: ghcr.io/fullstack-e-learning/file-reader-go:main
     depends_on:
@@ -81,6 +83,15 @@ services:
       - FILE_LOOKUP_PATH=/usr/data
     ports:
       - '6000:6000'
+  gateway:
+    image: ghcr.io/fullstack-e-learning/spring-cloud-gateway:main
+    volumes:
+      - ./config:/usr/data
+    environment:
+      - JAVA_TOOL_OPTIONS="-Dreactor.netty.http.server.accessLogEnabled=true"
+      - spring.config.location=/usr/data/
+    ports:
+      - '8080:8080'
 volumes:
   file-storage:
     
