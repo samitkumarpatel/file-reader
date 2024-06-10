@@ -4,8 +4,292 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>File-Reader</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin-left: auto;
+                margin-right: auto;
+                width: 50%;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                background-color: #f0f0f0;
+            }
+            .results {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                row-gap: 10px;
+                column-gap: 10px;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .result {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                background-color: #fff;
+                overflow: auto;
+            }
+            .result__heading {
+                font-size: 16px;
+                font-weight: bold;
+                text-decoration: underline;
+                /* text-align: center; */
+                margin: 0;
+                padding: 0;
+                display: flex;
+            }
+            .result__heading__name {
+                flex: 1;
+            }
+            .result__textbox {
+                height: 60%;
+                padding: 10px;
+                margin-top: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            .error {
+                color: red;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;
+            }
+            .ws__status__green {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                background-color: green;
+                border-radius: 50%;
+            }
+            .ws__status__red {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                background-color: red;
+                border-radius: 50%;
+            }
+        </style>
     </head>
     <body>
-        
+        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+        <div id="app">
+            <h3>{{ message }}</h3>
+            
+            <input type="file" @change="onFileChange" accept=".txt,.docx"/>
+            <hr/>
+            <div class="error" v-if="error">
+                {{ error}}
+                <hr/>
+            </div>
+            <div class="results">
+                <div class="result" v-for="r in results">
+                    <div class="result__heading">
+                        <div class="result__heading__name">{{ r.name }}</div>
+                        <div class="result__heading_status">
+                            <span :class="r.wsStatus ? 'ws__status__green' : 'ws__status__red' "></span>
+                        </div>
+                    </div>
+                    <p v-for="msg in  r.wsMessage">{{ msg }}</p>
+                    <div>
+                        <form @submit="wsMessageToTheServer">
+                            <input class="result__textbox" type="text" name="wsMessage" placeholder="Write a message" :disabled="!r.wsStatus">
+                            <input type="hidden" :value="r.name" name="wsMessageTo">
+                            <button type="submit" class="result__textbox" :disabled="!r.wsStatus">Send</button>
+                        </form>
+                    </div>
+                </div>
+                
+            </div>
+
+        </div>
+
+        <script>
+            const apiGatewayHost = 'localhost:8080'
+            const { createApp, ref } = Vue
+            createApp({
+                setup() {
+                    const message = ref('File Reader!')
+                    const results = ref([
+                        {"name" :'Java', "wsStatus": false, "wsMessage" : []},
+                        {"name" :'Kotlin', "wsStatus": false, "wsMessage" : []},
+                        {"name" :'Python', "wsStatus": false, "wsMessage" : []},
+                        {"name" :'Node', "wsStatus": false, "wsMessage" : []},
+                        {"name" :'Go', "wsStatus": false, "wsMessage" : []},
+                        {"name" :'Dotnet', "wsStatus": false, "wsMessage" : []},
+                        
+                    ])
+                    const error = ref(null)
+                    const wsMessage = ref(null)
+                    //node
+                    const wsNode = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/node/ws/`)
+                    wsNode.onopen = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Node') {
+                                r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsNode.onmessage = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Node') {
+                                r.wsMessage.push(e.data)
+                            }
+                            return r
+                        })
+                    }
+                    wsNode.onerror = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Node') {
+                                r.wsStatus = false
+                            }
+                            return r
+                        })
+                    }
+                    
+                    //python
+                    const wsPython = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/python/ws/`)
+                    wsPython.onopen = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Python') {
+                                r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsPython.onmessage = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Python') {
+                                r.wsMessage.push(e.data)
+                            }
+                            return r
+                        })
+                    }
+                    wsPython.onerror = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Python') {
+                                r.wsStatus = false
+                            }
+                            return r
+                        })
+                    }
+
+                    //java
+                    const wsJava = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/java/ws/`)
+                    wsJava.onopen = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Java') {
+                                r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsJava.onmessage = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Java') {
+                                r.wsMessage.push(e.data)
+                            }
+                            return r
+                        })
+                    }
+                    wsJava.onerror = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Java') {
+                                r.wsStatus = false
+                            }
+                            return r
+                        })
+                    }
+
+                    //kotlin
+                    const wsKotlin = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/kotlin/ws/`)
+                    wsKotlin.onopen = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Kotlin') {
+                                r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsKotlin.onmessage = (e) => {
+                        console.log(e.data)
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Kotlin') {
+                                r.wsMessage.push(e.data)
+                            }
+                            return r
+                        })
+                    }
+                    wsKotlin.onerror = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Kotlin') {
+                                r.wsStatus = false
+                            }
+                            return r
+                        })
+                    }
+                    //go
+
+                    const wsMessageToTheServer = (e) => {
+                        e.preventDefault();
+                        console.log(`wsMessageTo : ${e.target['wsMessageTo'].value}, wsMessage : ${e.target['wsMessage'].value}`)
+                        
+                        wsMessage.value = {
+                            "wsMessageTo": e.target['wsMessageTo'].value,
+                            "wsMessage": e.target['wsMessage'].value
+                        }
+                        e.target['wsMessage'].value = ''
+
+                        switch(wsMessage.value.wsMessageTo) {
+                            case 'Node':
+                                wsNode.send(wsMessage.value.wsMessage)
+                                break;
+                            case 'Python':
+                                wsPython.send(wsMessage.value.wsMessage)
+                                break;
+                            case 'Java':
+                                wsJava.send(wsMessage.value.wsMessage)
+                                break;
+                            case 'Kotlin':
+                                wsKotlin.send(wsMessage.value.wsMessage)
+                                break;
+                            default:
+                                console.log('No server found')
+                        }
+
+                    }
+
+                    const onFileChange = (e) => {
+                        const file = e.target.files[0]
+                        console.log(file)
+                        const formData = new FormData()
+                        formData.append('file', file)
+                        fetch(`http://${apiGatewayHost ? apiGatewayHost : location.host}/fileupload`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data)
+                            e.target.value = ''
+                        })
+                        .catch(error => {
+                            console.error('Error:', error)
+                            error.value = error
+                        })
+                            
+                    }
+                    return {
+                        message, results, error,
+                        onFileChange, wsMessageToTheServer
+                    }
+                }
+            }).mount('#app')
+        </script>
     </body>
 </html>
