@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>File-Reader</title>
+        <title>FileReader::UI</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -27,6 +27,8 @@
                 flex-wrap: wrap;
             }
             .result {
+                width: 45%;
+                height: auto;
                 padding: 10px;
                 border: 1px solid #ccc;
                 border-radius: 5px;
@@ -78,12 +80,15 @@
         <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
         <div id="app">
-            <h3>{{ message }}</h3>
+            <h3 style="margin-bottom: 20px;">{{ message }}</h3>
+            <label for="file">
+                Upload a file
+                <input type="file" @change="onFileChange" accept=".txt,.docx,.pdf" />
+            </label>
             
-            <input type="file" @change="onFileChange" accept=".txt,.docx"/>
             <hr/>
-            <div class="error" v-if="error">
-                {{ error}}
+            <div class="error" v-if="Object.keys(error).length > 0">
+                <pre>{{ JSON.stringify(error) }}</pre>
                 <hr/>
             </div>
             <div class="results">
@@ -94,10 +99,10 @@
                             <span :class="r.wsStatus ? 'ws__status__green' : 'ws__status__red' "></span>
                         </div>
                     </div>
-                    <p v-for="msg in  r.wsMessage">{{ msg }}</p>
+                    <p v-for="msg in  r.wsMessage">{{ dateAndTime() }} : {{ msg }}</p>
                     <div>
                         <form @submit="wsMessageToTheServer">
-                            <input class="result__textbox" type="text" name="wsMessage" placeholder="Write a message" :disabled="!r.wsStatus">
+                            <input class="result__textbox" type="text" name="wsMessage" placeholder="Echo a message" :disabled="!r.wsStatus">
                             <input type="hidden" :value="r.name" name="wsMessageTo">
                             <button type="submit" class="result__textbox" :disabled="!r.wsStatus">Send</button>
                         </form>
@@ -123,7 +128,7 @@
                         {"name" :'Dotnet', "wsStatus": false, "wsMessage" : []},
                         
                     ])
-                    const error = ref(null)
+                    const error = ref({})
                     const wsMessage = ref(null)
                     //node
                     const wsNode = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/node/ws/`)
@@ -131,6 +136,14 @@
                         results.value = results.value.map(r => {
                             if(r.name === 'Node') {
                                 r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsNode.onclose = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Node') {
+                                r.wsStatus = false
                             }
                             return r
                         })
@@ -144,12 +157,8 @@
                         })
                     }
                     wsNode.onerror = (e) => {
-                        results.value = results.value.map(r => {
-                            if(r.name === 'Node') {
-                                r.wsStatus = false
-                            }
-                            return r
-                        })
+                        console.log(e)
+                        error.value = {...error.value, node: 'Ws Error'}
                     }
                     
                     //python
@@ -158,6 +167,14 @@
                         results.value = results.value.map(r => {
                             if(r.name === 'Python') {
                                 r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsPython.onclose = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Python') {
+                                r.wsStatus = false
                             }
                             return r
                         })
@@ -171,12 +188,8 @@
                         })
                     }
                     wsPython.onerror = (e) => {
-                        results.value = results.value.map(r => {
-                            if(r.name === 'Python') {
-                                r.wsStatus = false
-                            }
-                            return r
-                        })
+                        console.log(e)
+                        error.value = {...error.value, python: 'Ws Error'}
                     }
 
                     //java
@@ -185,6 +198,14 @@
                         results.value = results.value.map(r => {
                             if(r.name === 'Java') {
                                 r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsJava.onclose = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Java') {
+                                r.wsStatus = false
                             }
                             return r
                         })
@@ -198,12 +219,8 @@
                         })
                     }
                     wsJava.onerror = (e) => {
-                        results.value = results.value.map(r => {
-                            if(r.name === 'Java') {
-                                r.wsStatus = false
-                            }
-                            return r
-                        })
+                        console.log(e)
+                        error.value = {...error.value, java: 'Ws Error'}
                     }
 
                     //kotlin
@@ -212,6 +229,14 @@
                         results.value = results.value.map(r => {
                             if(r.name === 'Kotlin') {
                                 r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsKotlin.onclose = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Kotlin') {
+                                r.wsStatus = false
                             }
                             return r
                         })
@@ -226,14 +251,40 @@
                         })
                     }
                     wsKotlin.onerror = (e) => {
+                        console.log(e)
+                        error.value = {...error.value, kotlin: 'Ws Error'}
+                    }
+                    
+                    //go
+                    const wsGo = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/go/ws/`)
+                    wsGo.onopen = (e) => {
                         results.value = results.value.map(r => {
-                            if(r.name === 'Kotlin') {
+                            if(r.name === 'Go') {
+                                r.wsStatus = true
+                            }
+                            return r
+                        })
+                    }
+                    wsGo.onclose = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Go') {
                                 r.wsStatus = false
                             }
                             return r
                         })
                     }
-                    //go
+                    wsGo.onmessage = (e) => {
+                        results.value = results.value.map(r => {
+                            if(r.name === 'Go') {
+                                r.wsMessage.push(e.data)
+                            }
+                            return r
+                        })
+                    }
+                    wsGo.onerror = (e) => {
+                        console.log(e)
+                        error.value = {...error.value, go: 'Ws Error'}
+                    }
 
                     const wsMessageToTheServer = (e) => {
                         e.preventDefault();
@@ -258,10 +309,18 @@
                             case 'Kotlin':
                                 wsKotlin.send(wsMessage.value.wsMessage)
                                 break;
+                            case 'Go':
+                                wsGo.send(wsMessage.value.wsMessage)
+                                break;
                             default:
                                 console.log('No server found')
                         }
 
+                    }
+
+                    const dateAndTime = () => {
+                        const currentdate = new Date();
+                        return currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
                     }
 
                     const onFileChange = (e) => {
@@ -286,7 +345,7 @@
                     }
                     return {
                         message, results, error,
-                        onFileChange, wsMessageToTheServer
+                        onFileChange, wsMessageToTheServer, dateAndTime
                     }
                 }
             }).mount('#app')

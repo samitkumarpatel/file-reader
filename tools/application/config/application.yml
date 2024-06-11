@@ -21,7 +21,7 @@ spring:
           predicates:
             - Path=/node/ws/
           filters:
-            - RewritePath=/node/ws(?<segment>/?.*), $\{segment}
+            - SetPath=/
         - id: node
           uri: http://node:3000
           predicates:
@@ -29,13 +29,13 @@ spring:
           filters:
             - RewritePath=/node(?<segment>/?.*), $\{segment}
         - id: python-ws
-          uri: ws://python:5001
+          uri: ws://python:5002
           predicates:
             - Path=/python/ws/
           filters:
             - SetPath=/
         - id: python
-          uri: http://python:5000
+          uri: http://python:5001
           predicates:
             - Path=/python/**
           filters:
@@ -46,11 +46,18 @@ spring:
             - Path=/java/ws/
           filters:
             - SetPath=/ws-java
+          
         - id: kotlin-ws
           uri: ws://kotlin:9000
           predicates:
             - Path=/kotlin/ws/
           filters:
             - SetPath=/ws-kotlin
+        - id: go-ws
+          uri: ws://go:6000
+          predicates:
+            - Path=/go/ws/
+          filters:
+            - SetPath=/ws
 
 

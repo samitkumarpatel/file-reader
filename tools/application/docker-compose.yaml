@@ -74,8 +74,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - FILE_LOOKUP_PATH=/usr/data
-    ports:
-      - '6000:6000'
   gateway:
     image: ghcr.io/fullstack-e-learning/spring-cloud-gateway:main
     restart: on-failure
