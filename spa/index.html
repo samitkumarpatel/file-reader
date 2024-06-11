@@ -83,12 +83,12 @@
             <h3 style="margin-bottom: 20px;">{{ message }}</h3>
             <label for="file">
                 Upload a file
-                <input type="file" @change="onFileChange" accept=".txt,.docx,.pdf" />
+                <input name="file" type="file" @change="onFileChange" accept=".txt,.docx,.pdf" />
             </label>
             
             <hr/>
             <div class="error" v-if="Object.keys(error).length > 0">
-                <pre>{{ JSON.stringify(error) }}</pre>
+                <pre>{{ error }}</pre>
                 <hr/>
             </div>
             <div class="results">
@@ -99,7 +99,7 @@
                             <span :class="r.wsStatus ? 'ws__status__green' : 'ws__status__red' "></span>
                         </div>
                     </div>
-                    <p v-for="msg in  r.wsMessage">{{ dateAndTime() }} : {{ msg }}</p>
+                    <p v-for="msg in  r.wsMessage">{{ msg }}</p>
                     <div>
                         <form @submit="wsMessageToTheServer">
                             <input class="result__textbox" type="text" name="wsMessage" placeholder="Echo a message" :disabled="!r.wsStatus">
@@ -130,6 +130,12 @@
                     ])
                     const error = ref({})
                     const wsMessage = ref(null)
+
+                    const dateAndTime = () => {
+                        const currentdate = new Date();
+                        return currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
+                    }
+                    
                     //node
                     const wsNode = new WebSocket(`ws://${apiGatewayHost ? apiGatewayHost : location.host}/node/ws/`)
                     wsNode.onopen = (e) => {
@@ -151,7 +157,7 @@
                     wsNode.onmessage = (e) => {
                         results.value = results.value.map(r => {
                             if(r.name === 'Node') {
-                                r.wsMessage.push(e.data)
+                                r.wsMessage.push(`${dateAndTime()} : ${e.data}`)
                             }
                             return r
                         })
@@ -182,7 +188,7 @@
                     wsPython.onmessage = (e) => {
                         results.value = results.value.map(r => {
                             if(r.name === 'Python') {
-                                r.wsMessage.push(e.data)
+                                r.wsMessage.push(`${dateAndTime()} : ${e.data}`)
                             }
                             return r
                         })
@@ -213,7 +219,7 @@
                     wsJava.onmessage = (e) => {
                         results.value = results.value.map(r => {
                             if(r.name === 'Java') {
-                                r.wsMessage.push(e.data)
+                                r.wsMessage.push(`${dateAndTime()} : ${e.data}`)
                             }
                             return r
                         })
@@ -245,7 +251,7 @@
                         console.log(e.data)
                         results.value = results.value.map(r => {
                             if(r.name === 'Kotlin') {
-                                r.wsMessage.push(e.data)
+                                r.wsMessage.push(`${dateAndTime()} : ${e.data}`)
                             }
                             return r
                         })
@@ -276,7 +282,7 @@
                     wsGo.onmessage = (e) => {
                         results.value = results.value.map(r => {
                             if(r.name === 'Go') {
-                                r.wsMessage.push(e.data)
+                                r.wsMessage.push(`${dateAndTime()} : ${e.data}`)
                             }
                             return r
                         })
@@ -318,11 +324,6 @@
 
                     }
 
-                    const dateAndTime = () => {
-                        const currentdate = new Date();
-                        return currentdate.getHours() + ':' + currentdate.getMinutes() + ':' + currentdate.getSeconds()
-                    }
-
                     const onFileChange = (e) => {
                         const file = e.target.files[0]
                         console.log(file)
@@ -345,7 +346,7 @@
                     }
                     return {
                         message, results, error,
-                        onFileChange, wsMessageToTheServer, dateAndTime
+                        onFileChange, wsMessageToTheServer
                     }
                 }
             }).mount('#app')
