@@ -85,7 +85,7 @@ services:
       - kotlin
       - go
     volumes:
-      - ./config:/usr/data
+      - ./gateway-config:/usr/data
     environment:
       - JAVA_TOOL_OPTIONS="-Dreactor.netty.http.server.accessLogEnabled=true"
       - spring.config.location=/usr/data/
